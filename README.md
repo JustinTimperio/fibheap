@@ -6,7 +6,7 @@
     FibHeap - A pure Go implementation of Fibonacci Heaps
 </h1>
 
-This package was originally based on the work of a fairly old lib created by starwander called [GoFibonacciHeap](https://github.com/starwander/GoFibonacciHeap). The original package is coming up on almost a decade old now and hasn't been touched in the past 5 years. For this reason, I have detached a fork and updated the guts to include some key features:
+This package was originally based on the work of a fairly old lib created by starwander called [GoFibonacciHeap](https://github.com/starwander/GoFibonacciHeap). The original package is coming up on almost a decade old now and hasn't been touched in the past 5 years. For this reason, I have detached a fork and updated the guts to include some priority features:
 - Instead of using a slow and costly `interface{}` to store values we now use the generics in Go to allow for native types in the heap.
 - The test suites had fallen quite out of date and are now fully upgraded to work with ginkgo/v2.
 - Code layout, organization and ergonomics have been greatly improved.
@@ -24,16 +24,16 @@ This implementation is a bit different from the traditional Fibonacci Heap with 
 
 - `NewFibHeap[t any]() *FibHeap[t]`: Creates and initializes a new Fibonacci Heap.
 - `Num() uint`: Returns the total number of values in the heap.
-- `Insert(tag t, key float64) error`: Inserts a new value with the given tag and key into the heap.
-- `Minimum() (tag t, f float64)`: Returns the current minimum tag and key in the heap.
-- `ExtractMin() (tag t, f float64)`: Returns the current minimum tag and key in the heap and then extracts them from the heap.
+- `Insert(data t, priority float64) error`: Inserts a new value with the given data and priority into the heap.
+- `Minimum() (data t, f float64)`: Returns the current minimum data and priority in the heap.
+- `ExtractMin() (data t, f float64)`: Returns the current minimum data and priority in the heap and then extracts them from the heap.
 - `Union(anotherHeap *FibHeap[t]) error`: Merges the input heap into the target heap.
-- `DecreaseKey(tag t, key float64) error`: Decreases the key of the value with the given tag in the heap.
-- `IncreaseKey(tag t, key float64) error`: Increases the key of the value with the given tag in the heap.
-- `Delete(tag t) error`: Removes the value with the given tag from the heap.
-- `GetTag(tag t) (key float64)`: Returns the key of the value with the given tag in the heap.
-- `ExtractTag(tag t) (key float64)`: Returns the key of the value with the given tag in the heap and then extracts it from the heap.
-- `ExtractValue(tag t) (t, float64)`: Returns the tag and key of the value with the given tag in the heap and then extracts it from the heap.
+- `DecreaseKey(data t, priority float64) error`: Decreases the priority of the value with the given data in the heap.
+- `IncreaseKey(data t, priority float64) error`: Increases the priority of the value with the given data in the heap.
+- `Delete(data t) error`: Removes the value with the given data from the heap.
+- `GetPriority(data t) (priority float64)`: Returns the priority of the value with the given data in the heap.
+- `ExtractPriority(data t) (priority float64)`: Returns the priority of the value with the given data in the heap and then extracts it from the heap.
+- `ExtractValue(data t) (t, float64)`: Returns the data and priority of the value with the given data in the heap and then extracts it from the heap.
 - `Stats() string`: Returns some basic debug information about the heap.
 
 
@@ -41,40 +41,47 @@ This implementation is a bit different from the traditional Fibonacci Heap with 
 ## Example
 ```go
 
-def main() {
-    heap := fibheap.NewFibHeap[student]()
-	heap2 := fibheap.NewFibHeap[student]()
+type SchoolEntry struct {
+	Name string
+	Age  float64
+	Type string
+}
 
-	s1 := student{"John", 18.3}
-	s2 := student{"Tom", 21.0}
-	s3 := student{"Jessica", 19.4}
-	s4 := student{"Amy", 23.1}
+func main() {
 
-	t1 := student{"Jason", 10.0}
-	t2 := student{"Jack", 25.0}
-	t3 := student{"Ryan", 28.0}
+	heap := fibheap.NewFibHeap[SchoolEntry]()
+	heap2 := fibheap.NewFibHeap[SchoolEntry]()
+
+	s1 := SchoolEntry{"John", 18.3, "student"}
+	s2 := SchoolEntry{"Tom", 21.0, "student"}
+	s3 := SchoolEntry{"Jessica", 19.4, "student"}
+	s4 := SchoolEntry{"Amy", 23.1, "student"}
+
+	t1 := SchoolEntry{"Jason", 10.0, "teacher"}
+	t2 := SchoolEntry{"Jack", 25.0, "teacher"}
+	t3 := SchoolEntry{"Ryan", 28.0, "teacher"}
 
 	heap.Insert(s1, s1.Age)
 	heap.Insert(s2, s2.Age)
 	heap.Insert(s3, s3.Age)
 	heap.Insert(s4, s4.Age)
 
-	fmt.Println(heap.Num())     
-	fmt.Println(heap.Minimum()) 
-	fmt.Println(heap.Num())     
+	fmt.Println(heap.Num())     // 4
+	fmt.Println(heap.Minimum()) // {John 18.3 student} 18.3
+	fmt.Println(heap.Num())     // 4
 
 	heap.IncreaseKey(s1, 20.0)
-	fmt.Println(heap.ExtractMin()) 
+	fmt.Println(heap.ExtractMin()) // {Jessica 19.4 student} 19.4
 
-	fmt.Println(heap.ExtractMin()) 
-	fmt.Println(heap.Num())        
+	fmt.Println(heap.ExtractMin()) // {John 18.3 student} 20
+	fmt.Println(heap.Num())        // 2
 
 	heap.DecreaseKey(s4, 16.5)
-	fmt.Println(heap.ExtractMin()) 
+	fmt.Println(heap.ExtractMin()) // {Amy 23.1 student} 16.5
 
-	fmt.Println(heap.Num())            
-	fmt.Println(heap.ExtractValue(s2))
-	fmt.Println(heap.Num())            
+	fmt.Println(heap.Num())       // 1
+	fmt.Println(heap.Extract(s2)) // {Tom 21 student} 21
+	fmt.Println(heap.Num())       // 0
 
 	heap.Insert(s1, s1.Age)
 	heap.Insert(s2, s2.Age)
@@ -86,13 +93,12 @@ def main() {
 
 	heap.Union(heap2)
 
-	fmt.Println(heap.Num())
-	fmt.Println(heap.Minimum())
+	fmt.Println(heap.Num())     // 7
+	fmt.Println(heap.Minimum()) // {Jason 10 teacher} 10
 	for heap.Num() > 1 {
 		heap.ExtractMin()
 	}
-	fmt.Println(heap.Num()) 
-	fmt.Println(heap.Minimum()) 
+	fmt.Println(heap.Num())     // 1
+	fmt.Println(heap.Minimum()) // {Ryan 28 teacher} 28
 }
-
 ```

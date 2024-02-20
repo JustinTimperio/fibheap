@@ -21,6 +21,6 @@ type node[t any] struct {
 	marked   bool
 	degree   uint
 	position uint
-	tag      t
-	key      float64
+	data     t
+	priority float64
 }

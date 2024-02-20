@@ -11,7 +11,7 @@ import (
 func probeTree[t any](buffer *bytes.Buffer, tree *list.List) {
 	buffer.WriteString(fmt.Sprintf("< "))
 	for e := tree.Front(); e != nil; e = e.Next() {
-		buffer.WriteString(fmt.Sprintf("%f ", e.Value.(*node[t]).key))
+		buffer.WriteString(fmt.Sprintf("%f ", e.Value.(*node[t]).priority))
 		if e.Value.(*node[t]).children.Len() != 0 {
 			probeTree[t](buffer, e.Value.(*node[t]).children)
 		}
@@ -34,7 +34,7 @@ func (heap *FibHeap[t]) link(parent, child *node[t]) {
 func (heap *FibHeap[t]) resetMin() {
 	heap.min = heap.roots.Front().Value.(*node[t])
 	for tree := heap.min.self.Next(); tree != nil; tree = tree.Next() {
-		if tree.Value.(*node[t]).key < heap.min.key {
+		if tree.Value.(*node[t]).priority < heap.min.priority {
 			heap.min = tree.Value.(*node[t])
 		}
 	}
@@ -81,7 +81,7 @@ func (heap *FibHeap[t]) consolidate() {
 		for heap.treeDegrees[tree.Value.(*node[t]).degree] != nil {
 			anotherTree := heap.treeDegrees[tree.Value.(*node[t]).degree]
 			heap.treeDegrees[tree.Value.(*node[t]).degree] = nil
-			if tree.Value.(*node[t]).key <= anotherTree.Value.(*node[t]).key {
+			if tree.Value.(*node[t]).priority <= anotherTree.Value.(*node[t]).priority {
 				heap.roots.Remove(anotherTree)
 				heap.link(tree.Value.(*node[t]), anotherTree.Value.(*node[t]))
 			} else {
@@ -97,28 +97,28 @@ func (heap *FibHeap[t]) consolidate() {
 	heap.resetMin()
 }
 
-func (heap *FibHeap[t]) insert(tag t, key float64) error {
-	if math.IsInf(key, -1) {
-		return errors.New("Negative infinity key is reserved for internal usage ")
+func (heap *FibHeap[t]) insert(data t, priority float64) error {
+	if math.IsInf(priority, -1) {
+		return errors.New("Negative infinity priority is reserved for internal usage ")
 	}
 
 	heap.mutex.Lock()
 	defer heap.mutex.Unlock()
 
-	if _, exists := heap.index[tag]; exists {
-		return errors.New("Duplicate tag is not allowed ")
+	if _, exists := heap.index[data]; exists {
+		return errors.New("Duplicate data is not allowed ")
 	}
 
 	node := new(node[t])
 	node.children = list.New()
-	node.tag = tag
-	node.key = key
+	node.data = data
+	node.priority = priority
 
 	node.self = heap.roots.PushBack(node)
-	heap.index[node.tag] = node
+	heap.index[node.data] = node
 	heap.num++
 
-	if heap.min == nil || heap.min.key > node.key {
+	if heap.min == nil || heap.min.priority > node.priority {
 		heap.min = node
 	}
 
@@ -141,7 +141,7 @@ func (heap *FibHeap[t]) extractMin() *node[t] {
 
 	heap.roots.Remove(heap.min.self)
 	heap.treeDegrees[min.position] = nil
-	delete(heap.index, heap.min.tag)
+	delete(heap.index, heap.min.data)
 	heap.num--
 
 	if heap.num == 0 {
@@ -153,45 +153,45 @@ func (heap *FibHeap[t]) extractMin() *node[t] {
 	return min
 }
 
-func (heap *FibHeap[t]) decreaseKey(n *node[t], key float64) error {
+func (heap *FibHeap[t]) decreaseKey(n *node[t], priority float64) error {
 	heap.mutex.Lock()
 	defer heap.mutex.Unlock()
 
-	if key >= n.key {
-		return errors.New("New key is not smaller than current key ")
+	if priority >= n.priority {
+		return errors.New("New priority is not smaller than current priority ")
 	}
 
-	n.key = key
+	n.priority = priority
 	if n.parent != nil {
 		parent := n.parent
-		if n.key < n.parent.key {
+		if n.priority < n.parent.priority {
 			heap.cut(n)
 			heap.cascadingCut(parent)
 		}
 	}
 
-	if n.parent == nil && n.key < heap.min.key {
+	if n.parent == nil && n.priority < heap.min.priority {
 		heap.min = n
 	}
 
 	return nil
 }
 
-func (heap *FibHeap[t]) increaseKey(n *node[t], key float64) error {
+func (heap *FibHeap[t]) increaseKey(n *node[t], priority float64) error {
 	heap.mutex.Lock()
 	defer heap.mutex.Unlock()
 
-	if key <= n.key {
-		return errors.New("New key is not larger than current key ")
+	if priority <= n.priority {
+		return errors.New("New priority is not larger than current priority ")
 	}
 
-	n.key = key
+	n.priority = priority
 
 	child := n.children.Front()
 	for child != nil {
 		childNode := child.Value.(*node[t])
 		child = child.Next()
-		if childNode.key < n.key {
+		if childNode.priority < n.priority {
 			heap.cut(childNode)
 			heap.cascadingCut(n)
 		}

@@ -34,104 +34,104 @@ func (heap *FibHeap[t]) Num() uint {
 	return heap.num
 }
 
-// Insert inserts a new value with the given tag and key into the heap.
+// Insert inserts a new value with the given data and priority into the heap.
 // Returns an error if the insertion fails.
-func (heap *FibHeap[t]) Insert(tag t, key float64) error {
-	return heap.insert(tag, key)
+func (heap *FibHeap[t]) Insert(data t, priority float64) error {
+	return heap.insert(data, priority)
 }
 
-// Minimum returns the current minimum tag and key in the heap.
+// Minimum returns the current minimum data and priority in the heap.
 // Returns -inf if the heap is empty.
-func (heap *FibHeap[t]) Minimum() (tag t, f float64) {
+func (heap *FibHeap[t]) Minimum() (data t, f float64) {
 	if heap.num == 0 {
-		return tag, math.Inf(-1)
+		return data, math.Inf(-1)
 	}
 
-	return heap.min.tag, heap.min.key
+	return heap.min.data, heap.min.priority
 }
 
-// ExtractMin returns the current minimum tag and key in the heap and then extracts them from the heap.
+// ExtractMin returns the current minimum data and priority in the heap and then extracts them from the heap.
 // Returns nil/-inf if the heap is empty.
-func (heap *FibHeap[t]) ExtractMin() (tag t, f float64) {
+func (heap *FibHeap[t]) ExtractMin() (data t, f float64) {
 	if heap.num == 0 {
-		return tag, math.Inf(-1)
+		return data, math.Inf(-1)
 	}
 
 	min := heap.extractMin()
-	return min.tag, min.key
+	return min.data, min.priority
 }
 
 // Union merges the input heap into the target heap.
-// Returns an error if any duplicate tags are found in the target heap.
+// Returns an error if any duplicate data are found in the target heap.
 func (heap *FibHeap[t]) Union(anotherHeap *FibHeap[t]) error {
-	for tag := range anotherHeap.index {
-		if _, exists := heap.index[tag]; exists {
-			return errors.New("Duplicate tag is found in the target heap")
+	for data := range anotherHeap.index {
+		if _, exists := heap.index[data]; exists {
+			return errors.New("Duplicate data is found in the target heap")
 		}
 	}
 
 	for _, node := range anotherHeap.index {
-		heap.insert(node.tag, node.key)
+		heap.insert(node.data, node.priority)
 	}
 
 	return nil
 }
 
-// DecreaseKey decreases the key of the value with the given tag in the heap.
-// Returns an error if the value is not found or the key is negative infinity.
-func (heap *FibHeap[t]) DecreaseKey(tag t, key float64) error {
-	if math.IsInf(key, -1) {
-		return errors.New("Negative infinity key is reserved for internal usage")
+// DecreaseKey decreases the priority of the value with the given data in the heap.
+// Returns an error if the value is not found or the priority is negative infinity.
+func (heap *FibHeap[t]) DecreaseKey(data t, priority float64) error {
+	if math.IsInf(priority, -1) {
+		return errors.New("Negative infinity priority is reserved for internal usage")
 	}
 
-	if node, exists := heap.index[tag]; exists {
-		return heap.decreaseKey(node, key)
-	}
-
-	return errors.New("Value is not found")
-}
-
-// IncreaseKey increases the key of the value with the given tag in the heap.
-// Returns an error if the value is not found or the key is negative infinity.
-func (heap *FibHeap[t]) IncreaseKey(tag t, key float64) error {
-	if math.IsInf(key, -1) {
-		return errors.New("Negative infinity key is reserved for internal usage")
-	}
-
-	if node, exists := heap.index[tag]; exists {
-		return heap.increaseKey(node, key)
+	if node, exists := heap.index[data]; exists {
+		return heap.decreaseKey(node, priority)
 	}
 
 	return errors.New("Value is not found")
 }
 
-// Delete removes the value with the given tag from the heap.
-// Returns an error if the tag is not found.
-func (heap *FibHeap[t]) Delete(tag t) error {
-	if _, exists := heap.index[tag]; !exists {
+// IncreaseKey increases the priority of the value with the given data in the heap.
+// Returns an error if the value is not found or the priority is negative infinity.
+func (heap *FibHeap[t]) IncreaseKey(data t, priority float64) error {
+	if math.IsInf(priority, -1) {
+		return errors.New("Negative infinity priority is reserved for internal usage")
+	}
+
+	if node, exists := heap.index[data]; exists {
+		return heap.increaseKey(node, priority)
+	}
+
+	return errors.New("Value is not found")
+}
+
+// Delete removes the value with the given data from the heap.
+// Returns an error if the data is not found.
+func (heap *FibHeap[t]) Delete(data t) error {
+	if _, exists := heap.index[data]; !exists {
 		return errors.New("Tag is not found")
 	}
 
-	heap.ExtractValue(tag)
+	heap.Extract(data)
 
 	return nil
 }
 
-// GetTag returns the key of the value with the given tag in the heap.
+// GetPriority returns the priority of the value with the given data in the heap.
 // Returns -inf if the value is not found.
-func (heap *FibHeap[t]) GetTag(tag t) (key float64) {
-	if node, exists := heap.index[tag]; exists {
-		return node.key
+func (heap *FibHeap[t]) GetPriority(data t) (priority float64) {
+	if node, exists := heap.index[data]; exists {
+		return node.priority
 	}
 
 	return math.Inf(-1)
 }
 
-// ExtractTag returns the key of the value with the given tag in the heap and then extracts it from the heap.
+// ExtractPriority returns the priority of the value with the given data in the heap and then extracts it from the heap.
 // Returns -inf if the value is not found.
-func (heap *FibHeap[t]) ExtractTag(tag t) (key float64) {
-	if node, exists := heap.index[tag]; exists {
-		key = node.key
+func (heap *FibHeap[t]) ExtractPriority(data t) (priority float64) {
+	if node, exists := heap.index[data]; exists {
+		priority = node.priority
 		heap.deleteNode(node)
 		return
 	}
@@ -139,17 +139,17 @@ func (heap *FibHeap[t]) ExtractTag(tag t) (key float64) {
 	return math.Inf(-1)
 }
 
-// ExtractValue returns the tag and key of the value with the given tag in the heap and then extracts it from the heap.
-// Returns the original tag and -inf if the value is not found.
-func (heap *FibHeap[t]) ExtractValue(tag t) (t, float64) {
-	if node, exists := heap.index[tag]; exists {
-		k := node.key
-		v := node.tag
+// ExtractValue returns the data and priority of the value with the given data in the heap and then extracts it from the heap.
+// Returns the original data and -inf if the value is not found.
+func (heap *FibHeap[t]) Extract(data t) (t, float64) {
+	if node, exists := heap.index[data]; exists {
+		k := node.priority
+		v := node.data
 		heap.deleteNode(node)
 		return v, k
 	}
 
-	return tag, math.Inf(-1)
+	return data, math.Inf(-1)
 }
 
 // Stats returns some basic debug information about the heap.
@@ -165,7 +165,7 @@ func (heap *FibHeap[t]) Stats() string {
 	}
 
 	buffer.WriteString(fmt.Sprintf("Total number: %d, Root Size: %d, Index size: %d,\n", heap.num, heap.roots.Len(), len(heap.index)))
-	buffer.WriteString(fmt.Sprintf("Current min: key(%f), tag(%v),\n", heap.min.key, heap.min.tag))
+	buffer.WriteString(fmt.Sprintf("Current min: priority(%f), data(%v),\n", heap.min.priority, heap.min.data))
 	buffer.WriteString(fmt.Sprintf("Heap detail:\n"))
 	probeTree[t](&buffer, heap.roots)
 	buffer.WriteString(fmt.Sprintf("\n"))
