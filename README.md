@@ -8,6 +8,8 @@
 
 This package was originally based on the work of a fairly old lib created by starwander called [GoFibonacciHeap](https://github.com/starwander/GoFibonacciHeap). The original package is coming up on almost a decade old now and hasn't been touched in the past 5 years. For this reason, I have detached a fork and updated the guts to include some priority features:
 - Instead of using a slow and costly `interface{}` to store values we now use the generics in Go to allow for native types in the heap.
+- Concurrency safety was missing in the original but now single heaps are protected with a mutex.
+- Previously data structs had to conform to a interface spec. Now data can be arbitrarily added and removed with no need to conform to a interface spec.
 - The test suites had fallen quite out of date and are now fully upgraded to work with ginkgo/v2.
 - Code layout, organization and ergonomics have been greatly improved.
 - The original was created before the standardization of go.mod and go.sum for packages. These have been added.
@@ -33,7 +35,7 @@ This implementation is a bit different from the traditional Fibonacci Heap with 
 - `Delete(data t) error`: Removes the value with the given data from the heap.
 - `GetPriority(data t) (priority float64)`: Returns the priority of the value with the given data in the heap.
 - `ExtractPriority(data t) (priority float64)`: Returns the priority of the value with the given data in the heap and then extracts it from the heap.
-- `ExtractValue(data t) (t, float64)`: Returns the data and priority of the value with the given data in the heap and then extracts it from the heap.
+- `Extract(data t) (t, float64)`: Returns the data and priority of the value with the given data in the heap and then extracts it from the heap.
 - `Stats() string`: Returns some basic debug information about the heap.
 
 
