@@ -77,9 +77,9 @@ func (heap *FibHeap[t]) Union(anotherHeap *FibHeap[t]) error {
 	return nil
 }
 
-// DecreaseKey decreases the priority of the value with the given data in the heap.
+// DecreasePriority decreases the priority of the value with the given data in the heap.
 // Returns an error if the value is not found or the priority is negative infinity.
-func (heap *FibHeap[t]) DecreaseKey(data t, priority float64) error {
+func (heap *FibHeap[t]) DecreasePriority(data t, priority float64) error {
 	if math.IsInf(priority, -1) {
 		return errors.New("Negative infinity priority is reserved for internal usage")
 	}
@@ -91,9 +91,9 @@ func (heap *FibHeap[t]) DecreaseKey(data t, priority float64) error {
 	return errors.New("Value is not found")
 }
 
-// IncreaseKey increases the priority of the value with the given data in the heap.
+// IncreasePriority increases the priority of the value with the given data in the heap.
 // Returns an error if the value is not found or the priority is negative infinity.
-func (heap *FibHeap[t]) IncreaseKey(data t, priority float64) error {
+func (heap *FibHeap[t]) IncreasePriority(data t, priority float64) error {
 	if math.IsInf(priority, -1) {
 		return errors.New("Negative infinity priority is reserved for internal usage")
 	}

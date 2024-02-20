@@ -47,13 +47,13 @@ func TestBasic(t *testing.T) {
 	fmt.Println(heap.Minimum()) // {John 18.3 student} 18.3
 	fmt.Println(heap.Num())     // 4
 
-	heap.IncreaseKey(s1, 20.0)
+	heap.IncreasePriority(s1, 20.0)
 	fmt.Println(heap.ExtractMin()) // {Jessica 19.4 student} 19.4
 
 	fmt.Println(heap.ExtractMin()) // {John 18.3 student} 20
 	fmt.Println(heap.Num())        // 2
 
-	heap.DecreaseKey(s4, 16.5)
+	heap.DecreasePriority(s4, 16.5)
 	fmt.Println(heap.ExtractMin()) // {Amy 23.1 student} 16.5
 
 	fmt.Println(heap.Num())       // 1
@@ -149,49 +149,49 @@ var _ = Describe("Tests of fibHeap", func() {
 			Expect(heap.Num()).Should(BeEquivalentTo(0))
 		})
 
-		It("Given a fibHeap inserted multiple values, when call DecreaseKey api with a non-exists value, it should return error.", func() {
+		It("Given a fibHeap inserted multiple values, when call DecreasePriority api with a non-exists value, it should return error.", func() {
 			for i := 0; i < 1000; i++ {
 				heap.Insert(i, float64(i))
 			}
 
-			Expect(heap.DecreaseKey(v1, float64(999))).Should(HaveOccurred())
+			Expect(heap.DecreasePriority(v1, float64(999))).Should(HaveOccurred())
 			Expect(heap.Num()).Should(BeEquivalentTo(1000))
 		})
 
-		It("Given a fibHeap with a value, when call DecreaseKey api with a negative infinity priority, it should return error.", func() {
+		It("Given a fibHeap with a value, when call DecreasePriority api with a negative infinity priority, it should return error.", func() {
 			heap.Insert(1000, float64(1000))
-			Expect(heap.DecreaseKey(v1, math.Inf(-1))).Should(HaveOccurred())
+			Expect(heap.DecreasePriority(v1, math.Inf(-1))).Should(HaveOccurred())
 		})
 
-		It("Given a fibHeap inserted multiple values, when call DecreaseKey api with a larger priority, it should return error.", func() {
+		It("Given a fibHeap inserted multiple values, when call DecreasePriority api with a larger priority, it should return error.", func() {
 			for i := 0; i < 1000; i++ {
 				heap.Insert(i, float64(i))
 			}
 
-			Expect(heap.DecreaseKey(v2, float64(1000))).Should(HaveOccurred())
+			Expect(heap.DecreasePriority(v2, float64(1000))).Should(HaveOccurred())
 			Expect(heap.Num()).Should(BeEquivalentTo(1000))
 		})
 
-		It("Given a fibHeap inserted multiple values, when call IncreaseKey api with a non-exists value, it should return error.", func() {
+		It("Given a fibHeap inserted multiple values, when call IncreasePriority api with a non-exists value, it should return error.", func() {
 			for i := 0; i < 1000; i++ {
 				heap.Insert(i, float64(i))
 			}
 
-			Expect(heap.IncreaseKey(v1, float64(999))).Should(HaveOccurred())
+			Expect(heap.IncreasePriority(v1, float64(999))).Should(HaveOccurred())
 			Expect(heap.Num()).Should(BeEquivalentTo(1000))
 		})
 
-		It("Given a fibHeap with a value, when call IncreaseKey api with a negative infinity priority, it should return error.", func() {
+		It("Given a fibHeap with a value, when call IncreasePriority api with a negative infinity priority, it should return error.", func() {
 			heap.Insert(1000, float64(1000))
-			Expect(heap.IncreaseKey(v1, math.Inf(-1))).Should(HaveOccurred())
+			Expect(heap.IncreasePriority(v1, math.Inf(-1))).Should(HaveOccurred())
 		})
 
-		It("Given a fibHeap inserted multiple values, when call IncreaseKey api with a smaller priority, it should return error.", func() {
+		It("Given a fibHeap inserted multiple values, when call IncreasePriority api with a smaller priority, it should return error.", func() {
 			for i := 0; i < 1000; i++ {
 				heap.Insert(i, float64(i))
 			}
 
-			Expect(heap.IncreaseKey(v2, float64(998))).Should(HaveOccurred())
+			Expect(heap.IncreasePriority(v2, float64(998))).Should(HaveOccurred())
 			Expect(heap.Num()).Should(BeEquivalentTo(1000))
 		})
 

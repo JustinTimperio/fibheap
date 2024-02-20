@@ -16,7 +16,7 @@ This package was originally based on the work of a fairly old lib created by sta
 
 This implementation is a bit different from the traditional Fibonacci Heap with an index map inside. Thanks to the index map, the internal struct 'node' no longer need to be exposed outsides the package. The index map also makes the random access to the values in the heap possible. The union operation of this implementation is O(n) rather than O(1) of the traditional implementation.
 
-| Operations                 | Insert | Minimum | ExtractMin | Union | DecreaseKey | IncreaseKey | Delete    | Get  |
+| Operations                 | Insert | Minimum | ExtractMin | Union | DecreasePriority | IncreasePriority | Delete    | Get  |
 | :------------------------: | :----: | :-----: | :--------: | :---: | :---------: | :---------: | :-------: | :--: |
 | Traditional Implementation | O(1)   | O(1)    | O(log n)¹  | O(1)  | O(1)¹       | O(1)¹       | O(log n)¹ | N/A  |
 | This Implementation        | O(1)   | O(1)    | O(log n)¹  | O(n)  | O(1)¹       | O(1)¹       | O(log n)¹ | O(1) |
@@ -30,8 +30,8 @@ This implementation is a bit different from the traditional Fibonacci Heap with 
 - `Minimum() (data t, f float64)`: Returns the current minimum data and priority in the heap.
 - `ExtractMin() (data t, f float64)`: Returns the current minimum data and priority in the heap and then extracts them from the heap.
 - `Union(anotherHeap *FibHeap[t]) error`: Merges the input heap into the target heap.
-- `DecreaseKey(data t, priority float64) error`: Decreases the priority of the value with the given data in the heap.
-- `IncreaseKey(data t, priority float64) error`: Increases the priority of the value with the given data in the heap.
+- `DecreasePriority(data t, priority float64) error`: Decreases the priority of the value with the given data in the heap.
+- `IncreasePriority(data t, priority float64) error`: Increases the priority of the value with the given data in the heap.
 - `Delete(data t) error`: Removes the value with the given data from the heap.
 - `GetPriority(data t) (priority float64)`: Returns the priority of the value with the given data in the heap.
 - `ExtractPriority(data t) (priority float64)`: Returns the priority of the value with the given data in the heap and then extracts it from the heap.
@@ -72,13 +72,13 @@ func main() {
 	fmt.Println(heap.Minimum()) // {John 18.3 student} 18.3
 	fmt.Println(heap.Num())     // 4
 
-	heap.IncreaseKey(s1, 20.0)
+	heap.IncreasePriority(s1, 20.0)
 	fmt.Println(heap.ExtractMin()) // {Jessica 19.4 student} 19.4
 
 	fmt.Println(heap.ExtractMin()) // {John 18.3 student} 20
 	fmt.Println(heap.Num())        // 2
 
-	heap.DecreaseKey(s4, 16.5)
+	heap.DecreasePriority(s4, 16.5)
 	fmt.Println(heap.ExtractMin()) // {Amy 23.1 student} 16.5
 
 	fmt.Println(heap.Num())       // 1
