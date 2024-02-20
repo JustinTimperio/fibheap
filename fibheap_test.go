@@ -1,9 +1,11 @@
 package fibheap_test
 
 import (
+	"container/heap"
 	"fmt"
 	"math"
 	"math/rand"
+	"sync"
 	"testing"
 
 	"github.com/JustinTimperio/fibheap"
@@ -22,6 +24,59 @@ type SchoolEntry struct {
 	Name string
 	Age  float64
 	Type string
+}
+
+func BenchmarkFibHeap(b *testing.B) {
+	heap := fibheap.NewFibHeap[SchoolEntry]()
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 500000; i++ {
+			age := rand.Float64() * 10
+			s := SchoolEntry{"Random", age, "student"}
+			heap.Insert(s, s.Age)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		for heap.Num() > 0 {
+			heap.ExtractMin()
+		}
+	}()
+
+	wg.Wait()
+}
+
+func BenchmarkStandardLibHeap(b *testing.B) {
+	pq := make(PriorityQueue, 0)
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 500000; i++ {
+			priority := rand.Int() * 10
+			item := &Item{
+				value:    "Random",
+				priority: priority,
+				index:    i,
+			}
+
+			heap.Push(&pq, item)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		for len(pq) > 0 {
+			heap.Pop(&pq)
+		}
+	}()
+
+	wg.Wait()
 }
 
 func TestBasic(t *testing.T) {
@@ -432,3 +487,51 @@ var _ = Describe("Tests of fibHeap", func() {
 		})
 	})
 })
+
+// An Item is something we manage in a priority queue.
+type Item struct {
+	value    string // The value of the item; arbitrary.
+	priority int    // The priority of the item in the queue.
+	// The index is needed by update and is maintained by the heap.Interface methods.
+	index int // The index of the item in the heap.
+}
+
+// A PriorityQueue implements heap.Interface and holds Items.
+type PriorityQueue []*Item
+
+func (pq PriorityQueue) Len() int { return len(pq) }
+
+func (pq PriorityQueue) Less(i, j int) bool {
+	// We want Pop to give us the highest, not lowest, priority so we use greater than here.
+	return pq[i].priority > pq[j].priority
+}
+
+func (pq PriorityQueue) Swap(i, j int) {
+	pq[i], pq[j] = pq[j], pq[i]
+	pq[i].index = i
+	pq[j].index = j
+}
+
+func (pq *PriorityQueue) Push(x any) {
+	n := len(*pq)
+	item := x.(*Item)
+	item.index = n
+	*pq = append(*pq, item)
+}
+
+func (pq *PriorityQueue) Pop() any {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	old[n-1] = nil  // avoid memory leak
+	item.index = -1 // for safety
+	*pq = old[0 : n-1]
+	return item
+}
+
+// update modifies the priority and value of an Item in the queue.
+func (pq *PriorityQueue) update(item *Item, value string, priority int) {
+	item.value = value
+	item.priority = priority
+	heap.Fix(pq, item.index)
+}
