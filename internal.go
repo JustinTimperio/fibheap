@@ -19,6 +19,47 @@ func probeTree[t any](buffer *bytes.Buffer, tree *list.List) {
 	buffer.WriteString(fmt.Sprintf("> "))
 }
 
+func (heap *FibHeap[t]) deleteNode(n *node[t]) {
+	heap.decreaseKey(n, math.Inf(-1))
+	heap.extractMin()
+}
+
+func (heap *FibHeap[t]) link(parent, child *node[t]) {
+	child.marked = false
+	child.parent = parent
+	child.self = parent.children.PushBack(child)
+	parent.degree++
+}
+
+func (heap *FibHeap[t]) resetMin() {
+	heap.min = heap.roots.Front().Value.(*node[t])
+	for tree := heap.min.self.Next(); tree != nil; tree = tree.Next() {
+		if tree.Value.(*node[t]).key < heap.min.key {
+			heap.min = tree.Value.(*node[t])
+		}
+	}
+}
+
+func (heap *FibHeap[t]) cut(n *node[t]) {
+	n.parent.children.Remove(n.self)
+	n.parent.degree--
+	n.parent = nil
+	n.marked = false
+	n.self = heap.roots.PushBack(n)
+}
+
+func (heap *FibHeap[t]) cascadingCut(n *node[t]) {
+	if n.parent != nil {
+		if !n.marked {
+			n.marked = true
+		} else {
+			parent := n.parent
+			heap.cut(n)
+			heap.cascadingCut(parent)
+		}
+	}
+}
+
 func (heap *FibHeap[t]) consolidate() {
 	for tree := heap.roots.Front(); tree != nil; tree = tree.Next() {
 		heap.treeDegrees[tree.Value.(*node[t]).position] = nil
@@ -61,6 +102,9 @@ func (heap *FibHeap[t]) insert(tag t, key float64) error {
 		return errors.New("Negative infinity key is reserved for internal usage ")
 	}
 
+	heap.mutex.Lock()
+	defer heap.mutex.Unlock()
+
 	if _, exists := heap.index[tag]; exists {
 		return errors.New("Duplicate tag is not allowed ")
 	}
@@ -82,6 +126,9 @@ func (heap *FibHeap[t]) insert(tag t, key float64) error {
 }
 
 func (heap *FibHeap[t]) extractMin() *node[t] {
+	heap.mutex.Lock()
+	defer heap.mutex.Unlock()
+
 	min := heap.min
 
 	children := heap.min.children
@@ -106,28 +153,10 @@ func (heap *FibHeap[t]) extractMin() *node[t] {
 	return min
 }
 
-func (heap *FibHeap[t]) deleteNode(n *node[t]) {
-	heap.decreaseKey(n, math.Inf(-1))
-	heap.ExtractMin()
-}
-
-func (heap *FibHeap[t]) link(parent, child *node[t]) {
-	child.marked = false
-	child.parent = parent
-	child.self = parent.children.PushBack(child)
-	parent.degree++
-}
-
-func (heap *FibHeap[t]) resetMin() {
-	heap.min = heap.roots.Front().Value.(*node[t])
-	for tree := heap.min.self.Next(); tree != nil; tree = tree.Next() {
-		if tree.Value.(*node[t]).key < heap.min.key {
-			heap.min = tree.Value.(*node[t])
-		}
-	}
-}
-
 func (heap *FibHeap[t]) decreaseKey(n *node[t], key float64) error {
+	heap.mutex.Lock()
+	defer heap.mutex.Unlock()
+
 	if key >= n.key {
 		return errors.New("New key is not smaller than current key ")
 	}
@@ -149,6 +178,9 @@ func (heap *FibHeap[t]) decreaseKey(n *node[t], key float64) error {
 }
 
 func (heap *FibHeap[t]) increaseKey(n *node[t], key float64) error {
+	heap.mutex.Lock()
+	defer heap.mutex.Unlock()
+
 	if key <= n.key {
 		return errors.New("New key is not larger than current key ")
 	}
@@ -170,24 +202,4 @@ func (heap *FibHeap[t]) increaseKey(n *node[t], key float64) error {
 	}
 
 	return nil
-}
-
-func (heap *FibHeap[t]) cut(n *node[t]) {
-	n.parent.children.Remove(n.self)
-	n.parent.degree--
-	n.parent = nil
-	n.marked = false
-	n.self = heap.roots.PushBack(n)
-}
-
-func (heap *FibHeap[t]) cascadingCut(n *node[t]) {
-	if n.parent != nil {
-		if !n.marked {
-			n.marked = true
-		} else {
-			parent := n.parent
-			heap.cut(n)
-			heap.cascadingCut(parent)
-		}
-	}
 }
