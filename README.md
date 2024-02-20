@@ -6,9 +6,8 @@
     FibHeap - A pure Go implementation of Fibonacci Heaps
 </h1>
 
-This package was originally based on the work of a fairly old lib that by starwander called [GoFibonacciHeap](https://github.com/starwander/GoFibonacciHeap). The original package is coming up on almost a decade old now and hasn't been touched in the past 5 years. For this reason, I have detached a fork and updated the guts to include some key features:
-- Instead of using a slow and costly `interface{}` to store values we now use the generics in Go to allow for native types in the heap.:w
-- 
+This package was originally based on the work of a fairly old lib created by starwander called [GoFibonacciHeap](https://github.com/starwander/GoFibonacciHeap). The original package is coming up on almost a decade old now and hasn't been touched in the past 5 years. For this reason, I have detached a fork and updated the guts to include some key features:
+- Instead of using a slow and costly `interface{}` to store values we now use the generics in Go to allow for native types in the heap.
 - The test suites had fallen quite out of date and are now fully upgraded to work with ginkgo/v2.
 - Code layout, organization and ergonomics have been greatly improved.
 - The original was created before the standardization of go.mod and go.sum for packages. These have been added.
