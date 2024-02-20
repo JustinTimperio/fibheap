@@ -37,7 +37,7 @@ func (heap *FibHeap[t]) Num() uint {
 // Insert inserts a new value with the given tag and key into the heap.
 // Returns an error if the insertion fails.
 func (heap *FibHeap[t]) Insert(tag t, key float64) error {
-	return heap.insert(tag, key, nil)
+	return heap.insert(tag, key)
 }
 
 // Minimum returns the current minimum tag and key in the heap.
@@ -71,7 +71,7 @@ func (heap *FibHeap[t]) Union(anotherHeap *FibHeap[t]) error {
 	}
 
 	for _, node := range anotherHeap.index {
-		heap.insert(node.tag, node.key, nil)
+		heap.insert(node.tag, node.key)
 	}
 
 	return nil
@@ -85,7 +85,7 @@ func (heap *FibHeap[t]) DecreaseKey(tag t, key float64) error {
 	}
 
 	if node, exists := heap.index[tag]; exists {
-		return heap.decreaseKey(node, nil, key)
+		return heap.decreaseKey(node, key)
 	}
 
 	return errors.New("Value is not found")
@@ -99,7 +99,7 @@ func (heap *FibHeap[t]) IncreaseKey(tag t, key float64) error {
 	}
 
 	if node, exists := heap.index[tag]; exists {
-		return heap.increaseKey(node, nil, key)
+		return heap.increaseKey(node, key)
 	}
 
 	return errors.New("Value is not found")
@@ -165,7 +165,7 @@ func (heap *FibHeap[t]) Stats() string {
 	}
 
 	buffer.WriteString(fmt.Sprintf("Total number: %d, Root Size: %d, Index size: %d,\n", heap.num, heap.roots.Len(), len(heap.index)))
-	buffer.WriteString(fmt.Sprintf("Current min: key(%f), tag(%v), value(%v),\n", heap.min.key, heap.min.tag, heap.min.value))
+	buffer.WriteString(fmt.Sprintf("Current min: key(%f), tag(%v),\n", heap.min.key, heap.min.tag))
 	buffer.WriteString(fmt.Sprintf("Heap detail:\n"))
 	probeTree[t](&buffer, heap.roots)
 	buffer.WriteString(fmt.Sprintf("\n"))

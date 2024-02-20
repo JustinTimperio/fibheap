@@ -56,7 +56,7 @@ func (heap *FibHeap[t]) consolidate() {
 	heap.resetMin()
 }
 
-func (heap *FibHeap[t]) insert(tag t, key float64, value Value[t]) error {
+func (heap *FibHeap[t]) insert(tag t, key float64) error {
 	if math.IsInf(key, -1) {
 		return errors.New("Negative infinity key is reserved for internal usage ")
 	}
@@ -69,7 +69,6 @@ func (heap *FibHeap[t]) insert(tag t, key float64, value Value[t]) error {
 	node.children = list.New()
 	node.tag = tag
 	node.key = key
-	node.value = value
 
 	node.self = heap.roots.PushBack(node)
 	heap.index[node.tag] = node
@@ -108,7 +107,7 @@ func (heap *FibHeap[t]) extractMin() *node[t] {
 }
 
 func (heap *FibHeap[t]) deleteNode(n *node[t]) {
-	heap.decreaseKey(n, n.value, math.Inf(-1))
+	heap.decreaseKey(n, math.Inf(-1))
 	heap.ExtractMin()
 }
 
@@ -128,13 +127,12 @@ func (heap *FibHeap[t]) resetMin() {
 	}
 }
 
-func (heap *FibHeap[t]) decreaseKey(n *node[t], value Value[t], key float64) error {
+func (heap *FibHeap[t]) decreaseKey(n *node[t], key float64) error {
 	if key >= n.key {
 		return errors.New("New key is not smaller than current key ")
 	}
 
 	n.key = key
-	n.value = value
 	if n.parent != nil {
 		parent := n.parent
 		if n.key < n.parent.key {
@@ -150,13 +148,12 @@ func (heap *FibHeap[t]) decreaseKey(n *node[t], value Value[t], key float64) err
 	return nil
 }
 
-func (heap *FibHeap[t]) increaseKey(n *node[t], value Value[t], key float64) error {
+func (heap *FibHeap[t]) increaseKey(n *node[t], key float64) error {
 	if key <= n.key {
 		return errors.New("New key is not larger than current key ")
 	}
 
 	n.key = key
-	n.value = value
 
 	child := n.children.Front()
 	for child != nil {

@@ -428,7 +428,7 @@ var _ = Describe("Tests of fibHeap", func() {
 			}
 
 			debugMsg := "Total number: 16, Root Size: 1, Index size: 16,\n" +
-				"Current min: key(14.000000), tag(14), value(<nil>),\n" +
+				"Current min: key(14.000000), tag(14),\n" +
 				"Heap detail:\n" +
 				"< 14.000000 < 56.000000 28.000000 < 42.000000 > 30.000000 < 33.000000 36.000000 < 39.000000 > > 20.000000 < 22.000000 24.000000 < 26.000000 > 40.000000 < 44.000000 48.000000 < 52.000000 > > > > > \n"
 			Expect(heap.Stats()).Should(BeEquivalentTo(debugMsg))

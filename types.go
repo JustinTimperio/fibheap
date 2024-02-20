@@ -5,11 +5,6 @@ import (
 	"sync"
 )
 
-type Value[t any] interface {
-	Tag() t
-	Key() float64
-}
-
 type FibHeap[t any] struct {
 	roots       *list.List
 	index       map[interface{}]*node[t]
@@ -28,5 +23,4 @@ type node[t any] struct {
 	position uint
 	tag      t
 	key      float64
-	value    Value[t]
 }
